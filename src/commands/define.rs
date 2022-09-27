@@ -11,6 +11,7 @@ struct ApiResponse {
     list: Box<[Description]>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Description {
     definition: String,
@@ -77,7 +78,11 @@ async fn define(word: &str) -> String {
         .push_line(definition)
         .push_line("")
         .push_bold_line("Example: ")
-        .push(example)
+        .push_line(example)
+        .push_line("")
+        .push_italic_line(
+            "Disclaimer: This content comes from Urban Dictionary and might be offensive.",
+        )
         .build();
 
     content.to_string()
