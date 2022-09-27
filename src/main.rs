@@ -27,7 +27,7 @@ impl EventHandler for Handler {
             println!("Received command interaction: {:#?}", command);
 
             let content = match command.data.name.as_str() {
-                "ping" => commands::ping_slash::run(&command.data.options),
+                "ping" => commands::ping::run(&command.data.options),
                 "define" => commands::define::run(&command.data.options).await,
                 _ => "not implemented :(".to_string(),
             };
@@ -50,7 +50,7 @@ impl EventHandler for Handler {
 
         let registered_commands = Command::set_global_application_commands(&ctx.http, |commands| {
             commands
-                .create_application_command(|command| commands::ping_slash::register(command))
+                .create_application_command(|command| commands::ping::register(command))
                 .create_application_command(|command| commands::define::register(command))
         })
         .await;

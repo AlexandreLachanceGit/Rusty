@@ -1,17 +1,10 @@
-use serenity::framework::standard::macros::command;
-use serenity::framework::standard::CommandResult;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::builder::CreateApplicationCommand;
+use serenity::model::prelude::interaction::application_command::CommandDataOption;
 
-#[command]
-async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
-    let emoji = ReactionType::Custom {
-        animated: false,
-        id: EmojiId(958380867565281360),
-        name: Some("rust_crab".into()),
-    };
-    msg.react(ctx, emoji).await?;
-    msg.reply(ctx, "Pong!").await?;
+pub fn run(_options: &[CommandDataOption]) -> String {
+    "Hey, I'm alive!".to_string()
+}
 
-    Ok(())
+pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+    command.name("ping").description("A ping command")
 }
