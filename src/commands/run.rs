@@ -18,13 +18,26 @@ struct ApiResponse {
 async fn run(ctx: &Context, msg: &Message) -> CommandResult {
     let start_bytes = msg.content.find("```rust").unwrap() + 8;
     let end_bytes = msg.content.rfind("```").unwrap();
-    let code = &msg.content[start_bytes..end_bytes];
+    let mut code = &msg.content[start_bytes..end_bytes];
+
+    let injected_code: String;
+    if msg.referenced_message.is_some() {
+        let message = msg.referenced_message.clone().unwrap().content;
+        injected_code = format!("const MSG: &str = \"{}\"; {}", message, code);
+        code = &injected_code;
+    }
 
     let code_response = run_code(code).await;
-    let reply = MessageBuilder::new()
-        .push_codeblock(&code_response, None)
-        .build();
-    msg.reply(ctx, reply).await?;
+
+    let mut reply = MessageBuilder::new();
+
+    if code_response.matches('\n').count() < 15 {
+        reply.push_codeblock_safe(&code_response, None);
+    } else {
+        reply.push_quote("ERROR: Output was too long.");
+    }
+
+    msg.reply(ctx, reply.build()).await?;
 
     Ok(())
 }
