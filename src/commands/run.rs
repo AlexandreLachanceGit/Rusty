@@ -5,6 +5,8 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::utils::MessageBuilder;
 
+const ERROR_TOO_LONG: &str = "ERROR: Output was too long.";
+
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct ApiResponse {
@@ -16,13 +18,15 @@ struct ApiResponse {
 
 #[command]
 async fn run(ctx: &Context, msg: &Message) -> CommandResult {
-    let start_bytes = msg.content.find("```rust").unwrap() + 8;
-    let end_bytes = msg.content.rfind("```").unwrap();
-    let mut code = &msg.content[start_bytes..end_bytes];
+    let content = msg.content_safe(&ctx.cache);
+
+    let start_bytes = content.find("```rust").unwrap() + 8;
+    let end_bytes = content.rfind("```").unwrap();
+    let mut code = &content[start_bytes..end_bytes];
 
     let injected_code: String;
     if msg.referenced_message.is_some() {
-        let message = msg.referenced_message.clone().unwrap().content;
+        let message = &msg.referenced_message.as_ref().unwrap().content;
         injected_code = format!("const MSG: &str = \"{}\"; {}", message, code);
         code = &injected_code;
     }
@@ -34,10 +38,16 @@ async fn run(ctx: &Context, msg: &Message) -> CommandResult {
     if code_response.matches('\n').count() < 15 {
         reply.push_codeblock_safe(&code_response, None);
     } else {
-        reply.push_quote("ERROR: Output was too long.");
+        reply.push_quote(ERROR_TOO_LONG);
     }
 
-    msg.reply(ctx, reply.build()).await?;
+    let built_reply = reply.build();
+    if built_reply.len() < 2000 {
+        msg.reply(ctx, built_reply).await?;
+    } else {
+        let error_reply = MessageBuilder::new().push_quote(ERROR_TOO_LONG).build();
+        msg.reply(ctx, error_reply).await?;
+    }
 
     Ok(())
 }
