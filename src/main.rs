@@ -4,6 +4,7 @@ use std::env;
 
 use crate::commands::hey_archy::*;
 use crate::commands::merch::*;
+use crate::commands::run::*;
 
 use serenity::async_trait;
 use serenity::framework::standard::macros::group;
@@ -15,7 +16,7 @@ use serenity::model::prelude::Ready;
 use serenity::prelude::*;
 
 #[group]
-#[commands(merch, hey_archy)]
+#[commands(merch, hey_archy, run)]
 struct General;
 
 struct Handler;
